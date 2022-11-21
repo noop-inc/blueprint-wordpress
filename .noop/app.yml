@@ -1,0 +1,102 @@
+---
+components:
+  - name: WordPress
+    type: service
+    image: wordpress:6.1.1-php8.1-apache
+    port: 80
+    build: &buildwp
+      steps:
+        - directory: /usr/src/wordpress
+        - run: find /etc/apache2 -name '*.conf' -type f -exec sed -ri -e "s!/var/www/html!/usr/src/wordpress/web!g" -e "s!Directory /var/www/!Directory /usr/src/wordpress/web!g" '{}' +
+        - copy: bin/
+        - run: sh bin/install-composer.sh
+        - run: sh bin/install-wpcli.sh
+        - run: apt update && apt install -y jq
+        - copy: wp-cli.yml
+        - copy: composer.json
+        - copy: composer.lock
+        - run: composer install
+        - copy: config/
+        - copy: web/
+    runtime: &runtimewp
+      resources:
+        - MySQLDatabase
+        - S3Bucket
+      variables:
+        STACK_ID:
+          $stack: id
+        APP_NAME:
+          $app: name
+        WP_ENV:
+          $env:
+            if:
+              - var: production
+              - production
+              - development
+        AWS_REGION:
+          $env: region
+        DB_HOST:
+          $resources: MySQLDatabase.host
+        DB_NAME:
+          $resources: MySQLDatabase.database
+        DB_USER:
+          $resources: MySQLDatabase.username
+        DB_PASSWORD:
+          $resources: MySQLDatabase.password
+        S3_UPLOADS_BUCKET:
+          $resources: S3Bucket.bucket
+        S3_UPLOADS_ENDPOINT:
+          $resources: S3Bucket.endpoint
+        S3_UPLOADS_REGION:
+          $env: region
+  #       # Defined in the UI
+  #       # WP_HOME: 'https://wp.local.noop.app'
+  #       # WP_SITEURL: 'https://wp.local.noop.app/wp'
+  #       # S3_UPLOADS_BUCKET_URL: 'https://wp.local.noop.app/bucket'
+  #       # get salts: https://roots.io/salts.html
+  #       # AUTH_KEY: 
+  #       # SECURE_AUTH_KEY: 
+  #       # LOGGED_IN_KEY:
+  #       # NONCE_KEY:
+  #       # AUTH_SALT:
+  #       # SECURE_AUTH_SALT:
+  #       # LOGGED_IN_SALT:
+  #       # NONCE_SALT:
+  - name: Cron
+    type: task
+    image: curlimages/curl:latest
+    cron: '* * * * *'
+    runtime:
+      command: curl --fail-with-body http://localstack/wp/wp-cron.php
+  - name: Salts
+    type: task
+    image: stedolan/jq:latest
+    build:
+      steps:
+        - copy: bin/salts.sh 
+          destination: /tmp/salts.sh
+    runtime:
+      entrypoint: ''
+      command: sh /tmp/salts.sh
+  - name: InstallWordPress
+    type: task
+    image: wordpress:6.1.1-php8.1-apache
+    build: *buildwp
+    runtime: 
+      <<: *runtimewp
+      command: sh -c bin/install-wordpress.sh
+      entrypoint: ''
+
+# lifecycles:
+#   - event: BeforeServices
+#     components: []
+
+routes:
+  - target:
+      component: WordPress
+
+resources:
+  - name: MySQLDatabase
+    type: mysql
+  - name: S3Bucket
+    type: s3

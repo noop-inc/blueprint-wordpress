@@ -1,0 +1,140 @@
+---
+name: Quickstart Setup
+description: Demo full stack setup of this app with internet endpoint
+workflow:
+  inputs:
+    - name: EnvironmentName
+      description: What should we name your new environment?
+      type: string
+      required: true
+      default: Quickstart Demo
+    - name: Cluster
+      type: Cluster
+      description: Which cluster should the environment launch on?
+      required: true
+    - name: SiteTitle
+      description: What is the name of the WordPress site?
+      type: string
+      required: true
+      default: Quickstart Demo
+    - name: AdminUser
+      description: What is the username of the administrator account of the WordPress installation?
+      type: string
+      required: true
+    - name: AdminEmail
+      description: What is the email to be used for the administrator account of the WordPress installation?
+      type: string
+      required: true
+  timeout: 1800 # 30 minutes
+  steps:
+    - name: Environment
+      action: EnvironmentCreate
+      params:
+        name:
+          $inputs: EnvironmentName
+        production: false
+        appId:
+          $runbook: Application.id
+        clusterId:
+          $inputs: Cluster.id
+    - name: Build
+      action: BuildExecute
+      params:
+        sourceCodeId:
+          $runbook: SourceCode.id
+        appId:
+          $runbook: Application.id
+    - name: Resources
+      action: ResourceLaunch
+      params:
+        envId:
+          $steps: Environment.id
+        sourceCodeId:
+          $runbook: SourceCode.id
+    - name: Endpoint
+      action: InternetEndpointCreate
+      params:
+        random: true
+        orgId:
+          $runbook: Organization.id
+        routes:
+          - name: 'Environment'
+            target:
+              environments:
+                - $steps: Environment.id
+    - name: TasksStack
+      action: StackCreate
+      params:
+        envId:
+          $steps: Environment.id
+        buildId:
+          $steps: Build.id
+    - name: Salts
+      action: TaskExecute
+      params:
+        stackId:
+          $steps: TasksStack.id
+        component: Salts
+    - name: SaltVariables
+      action: VariableBatchCreate
+      params:
+        variables:
+          $steps: Salts.output.variables
+        component: WordPress
+        envId: 
+          $steps: Environment.id
+    - name: WP_HOME
+      action: VariableCreate
+      params:
+        key: WP_HOME
+        value:
+          $steps: 'https://<Endpoint.authority>'
+        component: WordPress
+        envId: 
+          $steps: Environment.id
+    - name: WP_SITEURL
+      action: VariableCreate
+      params:
+        key: WP_SITEURL
+        value:
+          $steps: 'https://<Endpoint.authority>/wp'
+        component: WordPress
+        envId: 
+          $steps: Environment.id
+    - name: S3_UPLOADS_BUCKET_URL
+      action: VariableCreate
+      params:
+        key: S3_UPLOADS_BUCKET_URL
+        value:
+          $steps: 'https://<Endpoint.authority>/bucket'
+        component: WordPress
+        envId: 
+          $steps: Environment.id
+    - name: InstallWordPress
+      action: TaskExecute
+      params:
+        stackId:
+          $steps: TasksStack.id
+        component: InstallWordPress
+        runtime:
+          variables:
+            SITE_URL:
+              $steps: WP_SITEURL.value
+            SITE_TITLE:
+              $inputs: SiteTitle
+            ADMIN_EMAIL:
+              $inputs: AdminEmail
+            ADMIN_USER:
+              $inputs: AdminUser
+    - name: TasksStackDestroy
+      action: StackDestroy
+      params:
+        stackId:
+          $steps: TasksStack.id
+    - name: Deploy
+      action: DeploymentExecute
+      params:
+        envId:
+          $steps: Environment.id
+        buildId:
+          $steps: Build.id

@@ -1,19 +1,14 @@
 {
-  "name": "roots/bedrock",
+  "name": "noop-inc/blueprint-wordpress",
   "type": "project",
   "license": "MIT",
   "description": "WordPress boilerplate with Composer, easier configuration, and an improved folder structure",
-  "homepage": "https://roots.io/bedrock/",
+  "homepage": "https://github.com/noop-inc/blueprint-wordpress",
   "authors": [
     {
-      "name": "Scott Walkinshaw",
-      "email": "scott.walkinshaw@gmail.com",
-      "homepage": "https://github.com/swalkinshaw"
-    },
-    {
-      "name": "Ben Word",
-      "email": "ben@benword.com",
-      "homepage": "https://github.com/retlehs"
+      "name": "Noop, inc",
+      "email": "github@noop.dev",
+      "homepage": "https://github.com/noop-inc"
     }
   ],
   "keywords": [
@@ -22,11 +17,12 @@
     "roots",
     "wordpress",
     "wp",
-    "wp-config"
+    "wp-config",
+    "noop",
+    "noop-inc"
   ],
   "support": {
-    "issues": "https://github.com/roots/bedrock/issues",
-    "forum": "https://discourse.roots.io/category/bedrock"
+    "issues": "https://github.com/noop-inc/blueprint-wordpress/issues"
   },
   "repositories": [
     {

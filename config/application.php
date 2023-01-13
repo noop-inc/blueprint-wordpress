@@ -119,6 +119,7 @@ Config::define('S3_UPLOADS_BUCKET', env('S3_UPLOADS_BUCKET'));
 Config::define('S3_UPLOADS_ENDPOINT', env('S3_UPLOADS_ENDPOINT'));
 Config::define('S3_UPLOADS_REGION', env('S3_UPLOADS_REGION'));
 Config::define('S3_UPLOADS_BUCKET_URL', env('S3_UPLOADS_BUCKET_URL'));
+Config::define('S3_UPLOADS_USE_INSTANCE_PROFILE', true);
 
 /**
  * Allow WordPress to detect HTTPS when used behind a reverse proxy or a load balancer

@@ -23,7 +23,7 @@ add_action('init', function () {
   if (!defined('S3_UPLOADS_BUCKET_URL')) return;
   $url = explode('?', get_current_url())[0];
   if (strpos($url, \S3_UPLOADS_BUCKET_URL) !== 0) return;
-  $path = ltrim(str_replace(S3_UPLOADS_BUCKET_URL, '', $url), '/');
+  $path = ltrim(str_replace(\S3_UPLOADS_BUCKET_URL, '', $url), '/');
   $asset = untrailingslashit(sanitize_text_field($path));
 
   if (!$asset) return;
@@ -32,7 +32,7 @@ add_action('init', function () {
     $s3Uploads = \S3_Uploads\Plugin::get_instance();
     $s3 = $s3Uploads->s3();
     $params = [
-      'Bucket' => S3_UPLOADS_BUCKET,
+      'Bucket' => \S3_UPLOADS_BUCKET,
       'Key' => $asset,
     ];
     $object = $s3->getObject($params);

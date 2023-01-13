@@ -8,6 +8,11 @@ workflow:
       type: string
       required: true
       default: Quickstart Demo
+    - name: EnvironmentType
+      description: Development, staging, etc
+      type: string
+      required: true
+      default: staging
     - name: Cluster
       type: Cluster
       description: Which cluster should the environment launch on?
@@ -62,7 +67,7 @@ workflow:
             target:
               environments:
                 - $steps: Environment.id
-    - name: TasksStack
+    - name: SaltsStack
       action: StackCreate
       params:
         envId:
@@ -73,8 +78,13 @@ workflow:
       action: TaskExecute
       params:
         stackId:
-          $steps: TasksStack.id
+          $steps: SaltsStack.id
         component: Salts
+    - name: SaltsStackDestroy
+      action: StackDestroy
+      params:
+        stackId:
+          $steps: SaltsStack.id
     - name: SaltVariables
       action: VariableBatchCreate
       params:
@@ -83,54 +93,80 @@ workflow:
         component: WordPress
         envId: 
           $steps: Environment.id
-    - name: WP_HOME
-      action: VariableCreate
+    - name: WPVariables
+      action: VariableBatchCreate
       params:
-        key: WP_HOME
-        value:
-          $steps: 'https://<Endpoint.authority>'
+        variables:
+          - key: WP_ENV
+            value: 
+              $inputs: EnvironmentType
+          - key: WP_HOME
+            value:
+              $steps: 'https://<Endpoint.authority>'
+          - key: WP_SITEURL
+            value:
+              $steps: 'https://<Endpoint.authority>/wp'
+          - key: S3_UPLOADS_BUCKET_URL
+            value:
+              $steps: 'https://<Endpoint.authority>/bucket'
         component: WordPress
         envId: 
           $steps: Environment.id
-    - name: WP_SITEURL
-      action: VariableCreate
+    - name: SaltVariablesInstall
+      action: VariableBatchCreate
       params:
-        key: WP_SITEURL
-        value:
-          $steps: 'https://<Endpoint.authority>/wp'
-        component: WordPress
+        variables:
+          $steps: Salts.output.variables
+        component: InstallWordPress
         envId: 
           $steps: Environment.id
-    - name: S3_UPLOADS_BUCKET_URL
-      action: VariableCreate
+    - name: WPVariablesInstall
+      action: VariableBatchCreate
       params:
-        key: S3_UPLOADS_BUCKET_URL
-        value:
-          $steps: 'https://<Endpoint.authority>/bucket'
-        component: WordPress
+        variables:
+          - key: WP_ENV
+            value: 
+              $inputs: EnvironmentType
+          - key: WP_HOME
+            value:
+              $steps: 'https://<Endpoint.authority>'
+          - key: WP_SITEURL
+            value:
+              $steps: 'https://<Endpoint.authority>/wp'
+          - key: S3_UPLOADS_BUCKET_URL
+            value:
+              $steps: 'https://<Endpoint.authority>/bucket'
+        component: InstalWordPress
         envId: 
           $steps: Environment.id
+    - name: InstallWordPressStack
+      action: StackCreate
+      params:
+        envId:
+          $steps: Environment.id
+        buildId:
+          $steps: Build.id
     - name: InstallWordPress
       action: TaskExecute
       params:
         stackId:
-          $steps: TasksStack.id
+          $steps: InstallWordPressStack.id
         component: InstallWordPress
         runtime:
           variables:
             SITE_URL:
-              $steps: WP_SITEURL.value
+              $steps: WPVariables.WP_SITEURL.value
             SITE_TITLE:
               $inputs: SiteTitle
             ADMIN_EMAIL:
               $inputs: AdminEmail
             ADMIN_USER:
               $inputs: AdminUser
-    - name: TasksStackDestroy
+    - name: InstallWordPressStackDestroy
       action: StackDestroy
       params:
         stackId:
-          $steps: TasksStack.id
+          $steps: InstallWordPressStack.id
     - name: Deploy
       action: DeploymentExecute
       params:

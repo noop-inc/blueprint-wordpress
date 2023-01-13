@@ -10,6 +10,7 @@ Author URI: https://noop.dev
 namespace NoopS3Assets;
 
 // Filter S3 Uploads params.
+// This is used for local development
 add_filter('s3_uploads_s3_client_params', function ($params) {
   if (!defined('S3_UPLOADS_ENDPOINT')) return $params;
   $params['endpoint'] = \S3_UPLOADS_ENDPOINT;
@@ -66,6 +67,9 @@ add_action('init', function () {
 
 function get_current_url()
 {
-  $protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-  return $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+  $protocol = (
+    (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ||
+    (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+  ) ? "https://" : "http://";
+  return $protocol . ($_SERVER['HTTP_HOST'] ?? null) . $_SERVER['REQUEST_URI'];
 }

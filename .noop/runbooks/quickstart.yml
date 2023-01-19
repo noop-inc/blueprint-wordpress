@@ -90,7 +90,6 @@ workflow:
       params:
         variables:
           $steps: Salts.output.variables
-        component: WordPress
         envId: 
           $steps: Environment.id
     - name: WPVariables
@@ -109,34 +108,6 @@ workflow:
           - key: S3_UPLOADS_BUCKET_URL
             value:
               $steps: 'https://<Endpoint.authority>/bucket'
-        component: WordPress
-        envId: 
-          $steps: Environment.id
-    - name: SaltVariablesInstall
-      action: VariableBatchCreate
-      params:
-        variables:
-          $steps: Salts.output.variables
-        component: InstallWordPress
-        envId: 
-          $steps: Environment.id
-    - name: WPVariablesInstall
-      action: VariableBatchCreate
-      params:
-        variables:
-          - key: WP_ENV
-            value: 
-              $inputs: EnvironmentType
-          - key: WP_HOME
-            value:
-              $steps: 'https://<Endpoint.authority>'
-          - key: WP_SITEURL
-            value:
-              $steps: 'https://<Endpoint.authority>/wp'
-          - key: S3_UPLOADS_BUCKET_URL
-            value:
-              $steps: 'https://<Endpoint.authority>/bucket'
-        component: InstalWordPress
         envId: 
           $steps: Environment.id
     - name: InstallWordPressStack
@@ -154,8 +125,6 @@ workflow:
         component: InstallWordPress
         runtime:
           variables:
-            SITE_URL:
-              $steps: WPVariables.WP_SITEURL.value
             SITE_TITLE:
               $inputs: SiteTitle
             ADMIN_EMAIL:

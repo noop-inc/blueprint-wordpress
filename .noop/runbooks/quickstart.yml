@@ -42,6 +42,7 @@ workflow:
           $runbook: Application.id
         clusterId:
           $inputs: Cluster.id
+
     - name: Build
       action: BuildExecute
       params:
@@ -49,6 +50,7 @@ workflow:
           $runbook: SourceCode.id
         appId:
           $runbook: Application.id
+
     - name: Resources
       action: ResourceLaunch
       params:
@@ -56,6 +58,7 @@ workflow:
           $steps: Environment.id
         sourceCodeId:
           $runbook: SourceCode.id
+
     - name: Endpoint
       action: InternetEndpointCreate
       params:
@@ -67,6 +70,7 @@ workflow:
             target:
               environments:
                 - $steps: Environment.id
+
     - name: SaltsStack
       action: StackCreate
       params:
@@ -74,17 +78,20 @@ workflow:
           $steps: Environment.id
         buildId:
           $steps: Build.id
+
     - name: Salts
       action: TaskExecute
       params:
         stackId:
           $steps: SaltsStack.id
         component: SaltGenerator
+
     - name: SaltsStackDestroy
       action: StackDestroy
       params:
         stackId:
           $steps: SaltsStack.id
+
     - name: SaltVariables
       action: VariableBatchCreate
       params:
@@ -92,9 +99,12 @@ workflow:
           $steps: Salts.output.variables
         envId: 
           $steps: Environment.id
+        component: WordPress
+
     - name: WPVariables
       action: VariableBatchCreate
       params:
+        component: WordPress
         variables:
           - key: WP_ENV
             value: 
@@ -110,18 +120,49 @@ workflow:
               $steps: 'https://<Endpoint.authority>/bucket'
         envId: 
           $steps: Environment.id
-    - name: InstallWordPressStack
+
+    - name: InstallerSaltVariables
+      action: VariableBatchCreate
+      params:
+        variables:
+          $steps: Salts.output.variables
+        envId: 
+          $steps: Environment.id
+        component: WordPressInstaller
+
+    - name: InstallerWPVariables
+      action: VariableBatchCreate
+      params:
+        component: WordPressInstaller
+        variables:
+          - key: WP_ENV
+            value: 
+              $inputs: EnvironmentType
+          - key: WP_HOME
+            value:
+              $steps: 'https://<Endpoint.authority>'
+          - key: WP_SITEURL
+            value:
+              $steps: 'https://<Endpoint.authority>/wp'
+          - key: S3_UPLOADS_BUCKET_URL
+            value:
+              $steps: 'https://<Endpoint.authority>/bucket'
+        envId: 
+          $steps: Environment.id
+
+    - name: WordPressInstallerStack
       action: StackCreate
       params:
         envId:
           $steps: Environment.id
         buildId:
           $steps: Build.id
+
     - name: InstallWordPress
       action: TaskExecute
       params:
         stackId:
-          $steps: InstallWordPressStack.id
+          $steps: WordPressInstallerStack.id
         component: WordPressInstaller
         runtime:
           variables:
@@ -131,11 +172,13 @@ workflow:
               $inputs: AdminEmail
             ADMIN_USER:
               $inputs: AdminUser
-    - name: InstallWordPressStackDestroy
+
+    - name: WordPressInstallerStackDestroy
       action: StackDestroy
       params:
         stackId:
-          $steps: InstallWordPressStack.id
+          $steps: WordPressInstallerStack.id
+
     - name: Deploy
       action: DeploymentExecute
       params:

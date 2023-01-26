@@ -1,4 +1,8 @@
-# Overview
+# Noop Wordpress Blueprint
+
+## Overview
+
+This Wordpress Blueprint is a great way to get started using the [Noop Developer Platform](https://noop.dev). The [AppManifest](.noop/app.yml) describes how to run this software to Noop.
 
 ## Serving images
 

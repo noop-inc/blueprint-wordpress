@@ -49,26 +49,13 @@ components:
           $resources: S3Bucket.endpoint
         S3_UPLOADS_REGION:
           $env: region
-  #       # Defined in the UI
-  #       # WP_HOME: 'https://wp.local.noop.app'
-  #       # WP_SITEURL: 'https://wp.local.noop.app/wp'
-  #       # S3_UPLOADS_BUCKET_URL: 'https://wp.local.noop.app/bucket'
-  #       # get salts: https://roots.io/salts.html
-  #       # AUTH_KEY: 
-  #       # SECURE_AUTH_KEY: 
-  #       # LOGGED_IN_KEY:
-  #       # NONCE_KEY:
-  #       # AUTH_SALT:
-  #       # SECURE_AUTH_SALT:
-  #       # LOGGED_IN_SALT:
-  #       # NONCE_SALT:
-  - name: Cron
+  - name: WordPressCron
     type: task
     image: curlimages/curl:latest
     cron: '* * * * *'
     runtime:
       command: curl --fail-with-body http://localstack/wp/wp-cron.php
-  - name: Salts
+  - name: SaltGenerator
     type: task
     image: stedolan/jq:latest
     build:
@@ -78,7 +65,7 @@ components:
     runtime:
       entrypoint: ''
       command: sh /tmp/salts.sh
-  - name: InstallWordPress
+  - name: WordPressInstaller
     type: task
     image: wordpress:6.1.1-php8.1-apache
     build: *buildwp
@@ -95,10 +82,6 @@ components:
       <<: *runtimewp
       command: wp --allow-root --no-color --url="$SITE_URL" s3-uploads verify
       entrypoint: ''
-
-# lifecycles:
-#   - event: BeforeServices
-#     components: []
 
 routes:
   - target:

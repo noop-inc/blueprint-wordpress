@@ -1,13 +1,13 @@
 ---
-name: Quickstart Setup
-description: Demo full stack setup of this app with internet endpoint
+name: WordPress Quickstart Setup
+description: Full setup of WordPress including initialization and Endpoint
 workflow:
   inputs:
     - name: EnvironmentName
       description: What should we name your new environment?
       type: string
       required: true
-      default: Quickstart Demo
+      default: Quickstart WordPress
     - name: EnvironmentType
       description: Development, staging, etc
       type: string
@@ -21,7 +21,7 @@ workflow:
       description: What is the name of the WordPress site?
       type: string
       required: true
-      default: Quickstart Demo
+      default: My WordPress Site on Noop
     - name: AdminUser
       description: What is the username of the administrator account of the WordPress installation?
       type: string
@@ -79,7 +79,7 @@ workflow:
       params:
         stackId:
           $steps: SaltsStack.id
-        component: Salts
+        component: SaltGenerator
     - name: SaltsStackDestroy
       action: StackDestroy
       params:
@@ -122,7 +122,7 @@ workflow:
       params:
         stackId:
           $steps: InstallWordPressStack.id
-        component: InstallWordPress
+        component: WordPressInstaller
         runtime:
           variables:
             SITE_TITLE:

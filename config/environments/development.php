@@ -22,8 +22,4 @@ Config::define('DISALLOW_FILE_MODS', false);
 
 Config::define('S3_UPLOADS_KEY', 'ABCDEF');
 Config::define('S3_UPLOADS_SECRET', '1234567890');
-
-// Or if using IAM instance profiles, you can use the instance's credentials:
-// define( 'S3_UPLOADS_USE_INSTANCE_PROFILE', true );
-
-// Config::define('S3_UPLOADS_USE_LOCAL', true);
+Config::define('S3_UPLOADS_USE_INSTANCE_PROFILE', false);

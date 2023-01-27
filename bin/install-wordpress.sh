@@ -15,7 +15,7 @@ set -eux
 wp core install \
   --allow-root \
   --no-color \
-  --url="${SITE_URL}" \
+  --url="${WP_SITEURL}" \
   --title="${SITE_TITLE}" \
   --admin_user="${ADMIN_USER}" \
   --admin_email="${ADMIN_EMAIL}"

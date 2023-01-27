@@ -73,15 +73,6 @@ components:
       <<: *runtimewp
       command: sh -c bin/install-wordpress.sh
       entrypoint: ''
-  - name: VerifyUploads
-    type: task
-    cron: '* * * * *'
-    image: wordpress:6.1.1-php8.1-apache
-    build: *buildwp
-    runtime: 
-      <<: *runtimewp
-      command: wp --allow-root --no-color --url="$SITE_URL" s3-uploads verify
-      entrypoint: ''
 
 routes:
   - target:

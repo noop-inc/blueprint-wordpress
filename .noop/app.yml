@@ -2,7 +2,7 @@
 components:
   - name: WordPress
     type: service
-    image: wordpress:6.1.1-php8.1-apache
+    image: wordpress:6.4.1-php8.2-apache
     port: 80
     build: &buildwp
       steps:
@@ -67,7 +67,7 @@ components:
       command: sh /tmp/salts.sh
   - name: WordPressInstaller
     type: task
-    image: wordpress:6.1.1-php8.1-apache
+    image: wordpress:6.4.1-php8.2-apache
     build: *buildwp
     runtime: 
       <<: *runtimewp

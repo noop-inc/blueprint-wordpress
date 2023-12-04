@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Configuration overrides for WP_ENV === 'development'
  */
@@ -19,7 +18,3 @@ ini_set('display_errors', '1');
 
 // Enable plugin and theme updates and installation from the admin
 Config::define('DISALLOW_FILE_MODS', false);
-
-Config::define('S3_UPLOADS_KEY', 'ABCDEF');
-Config::define('S3_UPLOADS_SECRET', '1234567890');
-Config::define('S3_UPLOADS_USE_INSTANCE_PROFILE', false);
